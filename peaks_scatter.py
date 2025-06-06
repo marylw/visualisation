@@ -1,3 +1,5 @@
+import os
+import joblib  # pip install joblib
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
@@ -7,35 +9,59 @@ import plotly.express as px
 from load_data import mobile_sensors, static_sensors
 print('Data loaded')
 
-# Create Point geometries from Lat/Long
-static_geometry = [Point(xy) for xy in zip(static_sensors["Long"], static_sensors["Lat"])]
-print('Geometries created')	# takes long
+CACHE_DIR = "cache"
+os.makedirs(CACHE_DIR, exist_ok=True)
 
-# Convert to GeoDataFrame, assuming WGS84 (EPSG:4326) coordinates
-gdf_static_sensors = gpd.GeoDataFrame(static_sensors, geometry=static_geometry, crs="EPSG:4326")
-print('GeoDataFrame created')
+def cache_load_or_compute(filename, compute_fn):
+    path = os.path.join(CACHE_DIR, filename)
+    if os.path.exists(path):
+        print(f"Loading cached {filename}")
+        return joblib.load(path)
+    else:
+        print(f"Computing and caching {filename}")
+        obj = compute_fn()
+        joblib.dump(obj, path)
+        return obj
 
-# Create Point geometries from Lat/Long
-mobile_geometry = [Point(xy) for xy in zip(mobile_sensors["Long"], mobile_sensors["Lat"])]
-print('Geometries created for mobile sensors') # takes long
+# Create Point geometries from Lat/Long and convert to GeoDataFrame
+static_geometry = cache_load_or_compute(
+    "static_geometry.pkl",
+    lambda: [Point(xy) for xy in zip(static_sensors["Long"], static_sensors["Lat"])]
+)
+gdf_static_sensors = cache_load_or_compute(
+    "gdf_static_sensors.pkl",
+    lambda: gpd.GeoDataFrame(static_sensors, geometry=static_geometry, crs="EPSG:4326")
+)
 
-# Convert to GeoDataFrame, assuming WGS84 (EPSG:4326) coordinates
-gdf_mobile_sensors = gpd.GeoDataFrame(mobile_sensors, geometry=mobile_geometry, crs="EPSG:4326")
-print('GeoDataFrame created for mobile sensors')
+mobile_geometry = cache_load_or_compute(
+    "mobile_geometry.pkl",
+    lambda: [Point(xy) for xy in zip(mobile_sensors["Long"], mobile_sensors["Lat"])]
+)
+gdf_mobile_sensors = cache_load_or_compute(
+    "gdf_mobile_sensors.pkl",
+    lambda: gpd.GeoDataFrame(mobile_sensors, geometry=mobile_geometry, crs="EPSG:4326")
+)
 
-# Load the shapefile (e.g., neighborhoods)
-gdf_neighborhoods = gpd.read_file("MC2\data\StHimarkNeighborhoodShapefile\StHimark.shp")
-print('Neighborhoods loaded')
-
-# Ensure both datasets use the same coordinate reference system
+gdf_neighborhoods = cache_load_or_compute(
+    "gdf_neighborhoods.pkl",
+    lambda: gpd.read_file("MC2\data\StHimarkNeighborhoodShapefile\StHimark.shp")
+)
 gdf_neighborhoods = gdf_neighborhoods.to_crs(gdf_static_sensors.crs)
-print('Neighborhoods CRS converted to match sensors')
 
-gdf_joined_static = gpd.sjoin(gdf_static_sensors, gdf_neighborhoods, how="left", predicate="within")[['Timestamp', 'Sensor-id', 'Value', 'Lat', 'Long', 'Nbrhood']]
-gdf_joined_mobile= gpd.sjoin(gdf_mobile_sensors, gdf_neighborhoods, how="left", predicate="within")[['Timestamp', 'Sensor-id', 'Value', 'Lat', 'Long', 'Nbrhood']]
+gdf_joined_static = cache_load_or_compute(
+    "gdf_joined_static.pkl",
+    lambda: gpd.sjoin(gdf_static_sensors, gdf_neighborhoods, how="left", predicate="within")[['Timestamp', 'Sensor-id', 'Value', 'Lat', 'Long', 'Nbrhood']]
+)
+gdf_joined_mobile = cache_load_or_compute(
+    "gdf_joined_mobile.pkl",
+    lambda: gpd.sjoin(gdf_mobile_sensors, gdf_neighborhoods, how="left", predicate="within")[['Timestamp', 'Sensor-id', 'Value', 'Lat', 'Long', 'Nbrhood']]
+)
 
 gdf_joined_mobile['Sensor-id'] = gdf_joined_mobile['Sensor-id'] + 100
-gdf_joined_combined = pd.concat([gdf_joined_static, gdf_joined_mobile], ignore_index=True)
+gdf_joined_combined = cache_load_or_compute(
+    "gdf_joined_combined.pkl",
+    lambda: pd.concat([gdf_joined_static, gdf_joined_mobile], ignore_index=True)
+)
 print('Part 1 done')
 
 # Create a dataframe to hold the peaks
@@ -229,9 +255,5 @@ def combined_peak_plot(gdf_joined, y_max=1500, combined=True):
 
 scatter, bar = combined_peak_plot(gdf_joined_combined, combined=False)
 
-scatter.show()
-bar.show()
-
 normalized_df = peaks(gdf_joined_combined)
 categorical_scatter = px.scatter(normalized_df, y="Nbrhood", x="Timestamp")
-categorical_scatter.show()
