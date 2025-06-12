@@ -200,6 +200,7 @@ def combined_peak_plot(gdf_joined, y_max=1500, combined=True):
     else:
         # Create scatter plot
         scatter_fig = go.Figure()
+        color_map = {nbr: px.colors.qualitative.Light24[i % len(px.colors.qualitative.Light24)] for i, nbr in enumerate(neighborhoods)}
         for nbr in neighborhoods:
             df_nbr = peaks_df[peaks_df['Nbrhood'] == nbr]
             scatter_fig.add_trace(
@@ -220,7 +221,8 @@ def combined_peak_plot(gdf_joined, y_max=1500, combined=True):
             yaxis_title='Peak Height',
             yaxis_range=[0, y_max],
             width=1000,
-            height=500,
+            height=700,
+            legend = dict(font=dict(size=10))
         )
         scatter_fig.add_hline(y=1000, line_dash='dash', line_color='red', annotation_text='Danger Level 3',
                       annotation_position='top left', opacity=0.5)
@@ -240,7 +242,13 @@ def combined_peak_plot(gdf_joined, y_max=1500, combined=True):
         #             marker=dict(color=color_map[nbr]),
         #         )
         #     )
-        bar_fig = px.bar(normalized_df, x="Hour", y="Peaks_per_Sensor", color="Nbrhood", title="Normalized Peaks per Sensor per Neighborhood") 
+        bar_fig = px.bar(normalized_df, x="Hour", y="Peaks_per_Sensor", color="Nbrhood", title="Average Amount of Peaks per Sensor per Hour", color_discrete_sequence=color_map) 
+        bar_fig.update_layout(
+            xaxis_title='Hour',
+            yaxis_title='Average Amount of Peaks per Sensor',
+            legend = dict(font=dict(size=10))
+            )
+
 
         # line_fig.update_layout(
         #     title='Normalized Peaks per Sensor per Neighborhood',
@@ -257,3 +265,9 @@ scatter, bar = combined_peak_plot(gdf_joined_combined, combined=False)
 
 normalized_df = peaks(gdf_joined_combined)
 categorical_scatter = px.scatter(normalized_df, y="Nbrhood", x="Timestamp")
+categorical_scatter.update_layout(
+    title = 'Peaks per Neighborhood',
+    xaxis_title='Time',
+    yaxis_title='Neighborhood',
+    )
+
