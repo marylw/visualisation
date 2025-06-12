@@ -15,38 +15,7 @@ from scipy.interpolate import griddata
 import numpy as np
 from geopy.distance import geodesic
 
-# PREPROCESSING
-mobile_sensors = pd.read_csv("Data\MobileSensorReadings.csv")
-static_sensors = pd.read_csv("Data\StaticSensorReadings.csv")
-static_sensors_locations = pd.read_csv("Data\StaticSensorLocations.csv")
-img = Image.open("Data\StHimarkNeighborhoodMap.png")
-
-# Fix timestamps in data
-static_sensors['Timestamp'] = pd.to_datetime(static_sensors['Timestamp'])
-static_sensors['Minute'] = static_sensors['Timestamp'].dt.floor('min')
-static_sensors['Hour'] = static_sensors['Timestamp'].dt.floor('h')
-
-# Take max value per min/hour to get smaller datasets
-static_sensors_min = static_sensors.groupby(['Sensor-id', 'Minute'])['Value'].max().reset_index()
-static_sensors_hour = static_sensors.groupby(['Sensor-id', 'Hour'])['Value'].max().reset_index()
-
-# Add locations to static sensor data
-static_sensors_hour = pd.merge(static_sensors_hour, static_sensors_locations, on='Sensor-id', how='left')
-static_sensors_min = pd.merge(static_sensors_min, static_sensors_locations, on='Sensor-id', how='left')
-static_sensors = pd.merge(static_sensors, static_sensors_locations, on='Sensor-id', how='left')
-
-# Delete values below zero
-static_sensors_hour.loc[static_sensors_hour['Value'] <= 0, 'Value'] = 0
-static_sensors_min.loc[static_sensors_min['Value'] <= 0, 'Value'] = 0
-static_sensors.loc[static_sensors['Value'] <= 0, 'Value'] = 0
-
-# Do same for mobile sensers
-mobile_sensors['Timestamp'] = pd.to_datetime(mobile_sensors['Timestamp'])
-mobile_sensors['Minute'] = mobile_sensors['Timestamp'].dt.floor('min')
-mobile_sensors['Hour'] = mobile_sensors['Timestamp'].dt.floor('h')
-
-mobile_sensors_min = mobile_sensors.groupby(['Sensor-id', 'Minute', 'Long', 'Lat'])['Value'].max().reset_index()
-mobile_sensors_hour = mobile_sensors.groupby(['Sensor-id', 'Hour', 'Long', 'Lat'])['Value'].max().reset_index()
+from load_data import static_sensors, mobile_sensors, static_sensors_hour, static_sensors_min, mobile_sensors_hour, mobile_sensors_min
 
 # Function to rename values to danger categories
 def classify_radiation(cpm):

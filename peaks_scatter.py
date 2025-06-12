@@ -242,7 +242,8 @@ def combined_peak_plot(gdf_joined, y_max=1500, combined=True):
         #             marker=dict(color=color_map[nbr]),
         #         )
         #     )
-        bar_fig = px.bar(normalized_df, x="Hour", y="Peaks_per_Sensor", color="Nbrhood", title="Average Amount of Peaks per Sensor per Hour", color_discrete_sequence=color_map) 
+
+        bar_fig = px.bar(normalized_df, x="Hour", y="Peaks_per_Sensor", color="Nbrhood", title="Average Amount of Peaks per Sensor per Hour",color_discrete_map=color_map) 
         bar_fig.update_layout(
             xaxis_title='Hour',
             yaxis_title='Average Amount of Peaks per Sensor',
