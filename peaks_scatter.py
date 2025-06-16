@@ -6,22 +6,10 @@ from shapely.geometry import Point
 from scipy.signal import find_peaks
 import plotly.express as px
 
-from load_data import mobile_sensors, static_sensors
+
+from load_data import mobile_sensors, static_sensors, cache_load_or_compute
 print('Data loaded')
 
-CACHE_DIR = "cache"
-os.makedirs(CACHE_DIR, exist_ok=True)
-
-def cache_load_or_compute(filename, compute_fn):
-    path = os.path.join(CACHE_DIR, filename)
-    if os.path.exists(path):
-        print(f"Loading cached {filename}")
-        return joblib.load(path)
-    else:
-        print(f"Computing and caching {filename}")
-        obj = compute_fn()
-        joblib.dump(obj, path)
-        return obj
 
 # Create Point geometries from Lat/Long and convert to GeoDataFrame
 static_geometry = cache_load_or_compute(
