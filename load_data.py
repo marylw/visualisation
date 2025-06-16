@@ -1,10 +1,13 @@
 import pandas as pd
 from PIL import Image
+import os
+import joblib
 
 mobile_sensors = pd.read_csv("MC2\data\MobileSensorReadings.csv")
 static_sensors = pd.read_csv("MC2\data\StaticSensorReadings.csv")
 static_sensors_locations = pd.read_csv("MC2\data\StaticSensorLocations.csv")
 img = Image.open("MC2\data\StHimarkNeighborhoodMap.png")
+demographics = pd.read_csv("MC2\data\st_himark_neighborhood_data.csv")
 
 static_sensors['Timestamp'] = pd.to_datetime(static_sensors['Timestamp'])
 mobile_sensors['Timestamp'] = pd.to_datetime(mobile_sensors['Timestamp'])
@@ -42,3 +45,13 @@ mobile_sensors['Hour'] = mobile_sensors['Timestamp'].dt.floor('h')
 mobile_sensors_min = mobile_sensors.groupby(['Sensor-id', 'Minute', 'Long', 'Lat'])['Value'].max().reset_index()
 mobile_sensors_hour = mobile_sensors.groupby(['Sensor-id', 'Hour', 'Long', 'Lat'])['Value'].max().reset_index()
 
+def cache_load_or_compute(filename, compute_fn):
+    path = os.path.join(CACHE_DIR, filename)
+    if os.path.exists(path):
+        print(f"Loading cached {filename}")
+        return joblib.load(path)
+    else:
+        print(f"Computing and caching {filename}")
+        obj = compute_fn()
+        joblib.dump(obj, path)
+        return obj
