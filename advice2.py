@@ -76,11 +76,15 @@ if __name__ == "__main__":
     # Detect peaks
     peaks_df = detect_peaks(gdf_joined_combined)
 
+    decisions_df = peaks_df[['Timestamp']]
+    desisions_df =
+
     # Define timestamp of interest
     timestamp = "2020-04-07 01:40:00"  # Modify as needed
 
     # Analyze
     decision = analyze_neighborhood_data(pop_df, peaks_df, timestamp)
+
 
     # Print results
     print("Sensor Placement Suggestions:")
@@ -98,3 +102,4 @@ if __name__ == "__main__":
     print("Neighborhoods to Build Shelters in Suggestions:")
     for nb in decision['shelter_suggestions']:
         print(nb)
+

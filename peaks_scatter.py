@@ -236,6 +236,7 @@ def combined_peak_plot(gdf_joined, y_max=1500, combined=True):
             xaxis_title='Hour',
             yaxis_title='Average Amount of Peaks per Sensor',
             legend = dict(font=dict(size=10)),
+            legend_title_text='Neighborhood',
             height = 500
             )
 
