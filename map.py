@@ -12,7 +12,7 @@ from scipy.interpolate import griddata
 import numpy as np
 from geopy.distance import geodesic
 
-from load_data import static_sensors, static_sensors_hour, static_sensors_min, mobile_sensors, mobile_sensors_hour, mobile_sensors_min, static_sensors_locations, img
+from load_data import static_sensors, static_sensors_hour, static_sensors_min, mobile_sensors, mobile_sensors_hour, mobile_sensors_min, static_sensors_locations, img, cache_load_or_compute
 
 # Function to rename values to danger categories
 def classify_radiation(cpm):

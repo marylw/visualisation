@@ -2,6 +2,7 @@ import pandas as pd
 import joblib
 from datetime import datetime
 from scipy.signal import find_peaks
+from load_data import demographics
 
 # Radiation classification
 def classify_radiation(cpm):
@@ -53,25 +54,36 @@ def analyze_neighborhood_data_daily(pop_df, peaks_df, selected_day):
 
     return results
 
-# Main execution
-if __name__ == "__main__":
-    pop_df = pd.read_csv("st_himark_neighborhood_data.csv")
-    pop_df.rename(columns={"Neighborhood": "Nbrhood"}, inplace=True)
-    if 'Amount of sensors' not in pop_df.columns:
-        pop_df['Amount of sensors'] = 0
 
-    gdf_joined_combined = joblib.load("cache/gdf_joined_combined.pkl")
-    peaks_df = detect_peaks(gdf_joined_combined)
+pop_df = demographics
+pop_df.rename(columns={"Neighborhood": "Nbrhood"}, inplace=True)
+if 'Amount of sensors' not in pop_df.columns:
+    pop_df['Amount of sensors'] = 0
 
-    # Define day of interest
-    day_of_interest = "2020-04-06"
+gdf_joined_combined = joblib.load("cache/gdf_joined_combined.pkl")
+peaks_df = detect_peaks(gdf_joined_combined)
+
+# Define day of interest
+
+decision_rows =[]
+for day_of_interest in ["2020-04-06", "2020-04-07", "2020-04-08", "2020-04-09", "2020-04-10"]:
     decision = analyze_neighborhood_data_daily(pop_df, peaks_df, day_of_interest)
 
-    # Print results
-    print(f"Advice Summary for {day_of_interest}:")
-    print("Cleaning/Investigation Needed:", decision['neighborhoods_to_clean'])
-    print("Decontamination Citizens Needed:", decision['decontamination_needed'])
-    print("Shelter Needed:", decision['shelter_suggestions'])
-    print("Sensor Recommendations:")
-    for nb, typ in decision['sensors_needed']:
-        print(f"  - {nb}: {typ} sensor")
+    # Append dictionary for each day's decisions
+    decision_rows.append({
+        "Day of Interest": day_of_interest,
+        "Cleaning": decision['neighborhoods_to_clean'],
+        "Decontamination Citizens": decision['decontamination_needed'],
+        "Shelter": decision['shelter_suggestions'],
+        "Sensor Recommendations": decision['sensors_needed']
+    })
+df_decisions = pd.DataFrame(decision_rows)    
+
+# Print results
+print(f"Advice Summary for {day_of_interest}:")
+print("Cleaning/Investigation Needed:", decision['neighborhoods_to_clean'])
+print("Decontamination Citizens Needed:", decision['decontamination_needed'])
+print("Shelter Needed:", decision['shelter_suggestions'])
+print("Sensor Recommendations:")
+for nb, typ in decision['sensors_needed']:
+    print(f"  - {nb}: {typ} sensor")
