@@ -41,3 +41,4 @@ mobile_sensors['Hour'] = mobile_sensors['Timestamp'].dt.floor('h')
 
 mobile_sensors_min = mobile_sensors.groupby(['Sensor-id', 'Minute', 'Long', 'Lat'])['Value'].max().reset_index()
 mobile_sensors_hour = mobile_sensors.groupby(['Sensor-id', 'Hour', 'Long', 'Lat'])['Value'].max().reset_index()
+

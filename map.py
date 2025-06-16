@@ -12,7 +12,7 @@ from scipy.interpolate import griddata
 import numpy as np
 from geopy.distance import geodesic
 
-from load_data import static_sensors, static_sensors_hour, static_sensors_min, mobile_sensors, mobile_sensors_hour, mobile_sensors_min
+from load_data import static_sensors, static_sensors_hour, static_sensors_min, mobile_sensors, mobile_sensors_hour, mobile_sensors_min, static_sensors_locations, img
 
 # Function to rename values to danger categories
 def classify_radiation(cpm):
@@ -139,11 +139,10 @@ for minute, group in minute_groups_M:
     dbscan_M = DBSCAN(eps=0.8, min_samples=2)
     labels_M = dbscan_M.fit_predict(X_scaled)
 
-    group = group.copy()
-    group['Cluster'] = labels_M
-    group['Minute'] = minute
-    cluster_results_M.append(group)
-
+    clustered_df = group.iloc[:len(labels_M)].copy()
+    clustered_df['Cluster'] = labels_M
+    clustered_df['Minute'] = minute
+    cluster_results_M.append(clustered_df)
 # Combine all clustered groups
 static_sensors_clustered_minDB_M = pd.concat(cluster_results_M)
 
