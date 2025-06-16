@@ -9,7 +9,7 @@ from map import static_hotspot_map, mobile_hotspot_map
 from advice import df_decisions
 
 dates = df_decisions['Day of Interest'].unique()
-
+# Create the dashboard
 app = Dash()
 app.layout = html.Div([
     html.Label("Select Sensors:"),
@@ -49,6 +49,8 @@ app.layout = html.Div([
     Input('data-source', 'value'),
     Input('day-dropdown', 'value')
 )
+
+# Show correct plots based on selected sensors
 def update_plots(source, selected_day):
     import plotly.graph_objects as go
     empty_fig = go.Figure()
@@ -78,6 +80,7 @@ def update_plots(source, selected_day):
     decision_text = update_decision_text(selected_day)
     return categorical_scatter, scatter_fig, bar_fig, static_map, mobile_map, decision_text
 
+# Ensure the advice is nicely formatted
 def update_decision_text(selected_day):
     row = df_decisions[df_decisions['Day of Interest'].astype(str) == selected_day]
     if row.empty:

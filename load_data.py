@@ -45,7 +45,7 @@ mobile_sensors['Hour'] = mobile_sensors['Timestamp'].dt.floor('h')
 mobile_sensors_min = mobile_sensors.groupby(['Sensor-id', 'Minute', 'Long', 'Lat'])['Value'].max().reset_index()
 mobile_sensors_hour = mobile_sensors.groupby(['Sensor-id', 'Hour', 'Long', 'Lat'])['Value'].max().reset_index()
 
-
+# Create a function to cache dataframes to ensure faster loading time of the app
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
