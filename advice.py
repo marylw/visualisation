@@ -1,4 +1,43 @@
-import pandas as pd
+import joblib
+import os
+
+from load_data import demographics
+
+try: 
+    CACHE_DIR = "cache"
+    static_filename = 'gdf_joined_static.pkl'
+    mobile_filename = 'gdf_joined_mobile.pkl'
+    static_path = os.path.join(CACHE_DIR, static_filename)
+    mobile_path = os.path.join(CACHE_DIR, mobile_filename)
+    static2_filename = 'static_sensors_clustered_minDB.pkl'
+    mobile2_filename = 'mobile_sensors_clustered_minDB.pkl'
+    static2_path = os.path.join(CACHE_DIR, static2_filename)
+    mobile2_path = os.path.join(CACHE_DIR, mobile2_filename)
+    print(f"Loading cached {static_filename}")
+    gdf_joined_static = joblib.load(static_path)
+    print(f"Loading cached {mobile_filename}")
+    gdf_joined_mobile = joblib.load(mobile_path)
+    print(f"Loading cached {mobile2_filename}")
+    mobile_sensors_clustered_minDB = joblib.load(mobile2_path)
+    print(f"Loading cached {static2_filename}")
+    static_sensors_clustered_minDB = joblib.load(static2_path)
+    
+except:
+    print('Running peaks_scatter.py')
+    from peaks_scatter import gdf_joined_mobile, gdf_joined_static
+    from map import static_sensors_clustered_minDB, mobile_sensors_clustered_minDB
+
+def cluster_location(cluster_data, location_data):
+    location_data['Minute'] = location_data['Timestamp'].dt.floor('min')
+    location_data.groupby(['Sensor-id', 'Minute', 'Long', 'Lat'])['Value'].max().reset_index()
+    joined = cluster_data.merge(location_data, on=['Sensor-id', 'Long', 'Lat', 'Minute', 'Value'], how='left')
+    print(joined.head(10))
+    print(cluster_data.head(10))
+    print(location_data.head(10))
+    
+cluster_location(static_sensors_clustered_minDB, gdf_joined_static)
+
+print('data is joined')
 
 def analyze_neighborhood_data(df):
     results = {
@@ -42,7 +81,7 @@ def analyze_neighborhood_data(df):
 
 # Example usage
 if __name__ == "__main__":
-    df = pd.read_csv("st_himark_neighborhood_data.csv")
+    df = demographics
     decision = analyze_neighborhood_data(df)
 
     print("--- SENSOR PLACEMENT SUGGESTIONS ---")

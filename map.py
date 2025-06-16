@@ -216,3 +216,5 @@ def animated_hotspot_map(data, timescale='Minute', scale=40):
 
 static_hotspot_map = animated_hotspot_map(static_sensors_clustered_minDB,'Minute')
 mobile_hotspot_map = animated_hotspot_map(static_sensors_clustered_minDB_M,'Minute')
+
+# ..
