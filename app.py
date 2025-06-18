@@ -35,7 +35,7 @@ app.layout = html.Div([
             style_cell={'textAlign': 'center'},
             style_header={'fontWeight': 'bold'}
         ),
-        html.Label("Select Day for Advice Summary"),
+        html.Label("Select Day for Advice Summary Below"),
         dcc.Dropdown(
             id='day-dropdown',
             options=[{'label': d, 'value': d} for d in dates],
