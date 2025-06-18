@@ -1,5 +1,5 @@
 import plotly.express as px
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table as dt
 
 from peaks_scatter import (
     gdf_joined_static, gdf_joined_mobile, gdf_joined_combined,
@@ -7,6 +7,7 @@ from peaks_scatter import (
 )
 from map import static_hotspot_map, mobile_hotspot_map
 from advice import df_decisions
+from mismatches import mismatch_summary
 
 dates = df_decisions['Day of Interest'].unique()
 # Create the dashboard
@@ -25,18 +26,28 @@ app.layout = html.Div([
     dcc.Graph(id='categorical-scatter'),
     dcc.Graph(id='scatter-plot', style={'width': '60%', 'display': 'inline-block'}),
     html.Div([
+        html.H3('Sensors that should be Recalibrated'),
+        dt.DataTable(
+            id='mismatch-table',
+            columns=[{"name": i, "id": i} for i in mismatch_summary.columns],
+            data=mismatch_summary.to_dict('records'),
+            style_table={'overflowX': 'auto'},
+            style_cell={'textAlign': 'center'},
+            style_header={'fontWeight': 'bold'}
+        ),
         html.Label("Select Day for Advice Summary"),
         dcc.Dropdown(
             id='day-dropdown',
             options=[{'label': d, 'value': d} for d in dates],
             value=dates[0],
-            style={'margin-bottom': '10px'}
+            style={'margin-bottom': '10px'}   
         ),
         html.Div(id='decision-output')
     ], style={'width': '38%', 'verticalAlign': 'top', 'display': 'inline-block', 'paddingLeft': '2%'}),
     dcc.Graph(id='bar-plot'),
     dcc.Graph(id='statichotspot', style={'width': '48%', 'display': 'inline-block'}),
     dcc.Graph(id='mobilehotspot', style={'width': '48%', 'display': 'inline-block'})
+    
     ])
 
 @app.callback(
@@ -68,7 +79,7 @@ def update_plots(source, selected_day):
         static_map = static_hotspot_map
         mobile_map = mobile_hotspot_map
 
-    scatter_fig, bar_fig = combined_peak_plot(df, combined=False)
+    scatter_fig, bar_fig = combined_peak_plot(df)
     normalized_df = peaks(df)
     categorical_scatter = px.scatter(normalized_df, y="Nbrhood", x="Timestamp")
     categorical_scatter.update_layout(

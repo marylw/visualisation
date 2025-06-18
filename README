@@ -1,0 +1,55 @@
+# Visual Analytics Dashboard
+
+This project is a Dash-based interactive dashboard for visualizing and analyzing radiation sensor data in St. Himark. It combines static and mobile sensor readings, spatial hotspot maps, and daily decision recommendations.
+
+## Features
+
+- **Sensor Data Visualization:**  
+  View scatter plots and bar plots for static, mobile, or combined sensor data.
+
+- **Hotspot Maps:**  
+  Interactive maps display radiation hotspots for both static and mobile sensors, shown side by side.
+
+- **Daily Recommendations:**  
+  Select a day to view cleaning, decontamination, shelter, and sensor deployment recommendations in a clear, formatted text and table.
+
+- **Caching:**  
+  Expensive data processing steps are cached for faster app startup.
+
+## Requirements
+
+- Python 3.8+
+- [Dash](https://dash.plotly.com/)
+- pandas
+- geopandas
+- plotly
+- joblib
+- Pillow
+- shapely
+- scipy
+
+Install dependencies with:
+```bash
+pip install dash pandas geopandas plotly joblib pillow shapely scipy
+```
+
+## Usage
+
+1. **Prepare Data:**  
+   Place all required CSV and shapefile data in the `MC2/data/` directory as expected by the code.
+
+2. **Run the App:**  
+   ```
+   python app.py
+   ```
+   The dashboard will be available at [http://127.0.0.1:8050/](http://127.0.0.1:8050/).
+
+## File Structure
+
+- `app.py` — Main Dash app.
+- `peaks_scatter.py` — Functions that create a bar and two scatter plots
+- `map.py` — Functions to generate hotspot maps.
+- `advice.py` — Generates daily decision recommendations.
+- `load_data.py` — Loads and preprocesses raw data.
+- `MC2/data/` — Directory for all input data files.
+
