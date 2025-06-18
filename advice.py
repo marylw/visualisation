@@ -24,7 +24,7 @@ def detect_peaks(gdf_data):
         peaks_df = pd.concat([peaks_df, selected_peaks_df], ignore_index=True)
     return peaks_df
 
-# Daily advisory logic
+# Function to collect daily advice by checking metrics
 def analyze_neighborhood_data_daily(pop_df, peaks_df, selected_day):
     selected_day = pd.to_datetime(selected_day)
     peaks_df['Day'] = pd.to_datetime(peaks_df['Timestamp']).dt.floor('d')
@@ -38,15 +38,21 @@ def analyze_neighborhood_data_daily(pop_df, peaks_df, selected_day):
         "shelter_suggestions": []
     }
 
+    # Which sensors to recommend
     for _, row in pop_df.iterrows():
+        # If population is big or there is a hospital AND the number of sensors is 2 or lower, recommend adding static sensor
         if (row['Population'] > pop_df['Population'].median() or row['Amount of hospitals'] >= 1) and row['Amount of sensors'] <= 2:
             results['sensors_needed'].append((row['Nbrhood'], 'static'))
+        # If not many people live in the area but many animals, recommend adding mobile sensors
         elif row['Amount of animals'] > pop_df['Amount of animals'].mean() and row['Population'] < pop_df['Population'].median():
             results['sensors_needed'].append((row['Nbrhood'], 'mobile'))
 
+    # Recommend cleaning/inspecting the area if the radiation level is above background (so level 2 or higher)
     results['neighborhoods_to_clean'] = list(snapshot[snapshot['Radiation_Level'] >= 2]['Nbrhood'].dropna().unique())
+    # Recommend decontamination of citizens if the radiation level reaches 3 or higher
     results['decontamination_needed'] = list(snapshot[snapshot['Radiation_Level'] >= 3]['Nbrhood'].dropna().unique())
 
+    # Recommend building shelters if an area has a high population count and no hospitals closeby 
     for _, row in pop_df.iterrows():
         if row['Population'] > pop_df['Population'].quantile(0.75):
             if row['Amount of hospitals'] == 0:
@@ -54,7 +60,7 @@ def analyze_neighborhood_data_daily(pop_df, peaks_df, selected_day):
 
     return results
 
-
+# Display results on dashboard
 pop_df = demographics
 pop_df.rename(columns={"Neighborhood": "Nbrhood"}, inplace=True)
 if 'Amount of sensors' not in pop_df.columns:
@@ -63,8 +69,7 @@ if 'Amount of sensors' not in pop_df.columns:
 gdf_joined_combined = joblib.load("cache/gdf_joined_combined.pkl")
 peaks_df = detect_peaks(gdf_joined_combined)
 
-# Define day of interest
-
+# Define day of interest with dropdown menu
 decision_rows =[]
 for day_of_interest in ["2020-04-06", "2020-04-07", "2020-04-08", "2020-04-09", "2020-04-10"]:
     decision = analyze_neighborhood_data_daily(pop_df, peaks_df, day_of_interest)

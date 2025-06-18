@@ -11,7 +11,6 @@ import plotly.graph_objects as go
 from scipy.interpolate import griddata
 import numpy as np
 from geopy.distance import geodesic
-
 from load_data import static_sensors, static_sensors_hour, static_sensors_min, mobile_sensors, mobile_sensors_hour, mobile_sensors_min, static_sensors_locations, img, cache_load_or_compute
 
 # Function to rename values to danger categories
@@ -51,7 +50,7 @@ mobile_sensors_hourD['DangerLevel'] = mobile_sensors_hourD['Radiation_Level'].as
 mobile_sensors_minD['DangerLevel'] = mobile_sensors_minD['Radiation_Level'].astype(str)
 mobile_sensorsD['DangerLevel'] = mobile_sensorsD['Radiation_Level'].astype(str)
 
-# add dummy values so that the legend is visible
+# add dummy values to first timestamp in data so that every value is visible in legend
 for i in range(5):
     temp = static_sensors_hourD.head(1).copy()
     temp.loc[0,'DangerLevel'] = str(int(i+1))
@@ -147,11 +146,8 @@ for minute, group in minute_groups_M:
 static_sensors_clustered_minDB_M = pd.concat(cluster_results_M)
 
 # PLOTTING
+# Function for plotting
 def animated_hotspot_map(data, timescale='Minute', scale=40):
-    """
-    Shows animated colored zones for DangerLevel 2–5 over time.
-    `data` must include 'DangerLevel' (as string), 'Lat', 'Long', and 'Value'.
-    """
     extent = [-120, -119.711751, 0, 0.238585]
     
     color_map = {
@@ -216,5 +212,3 @@ def animated_hotspot_map(data, timescale='Minute', scale=40):
 
 static_hotspot_map = animated_hotspot_map(static_sensors_clustered_minDB,'Minute')
 mobile_hotspot_map = animated_hotspot_map(static_sensors_clustered_minDB_M,'Minute')
-
-# ..
