@@ -5,14 +5,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN
 import plotly.express as px
 import plotly.graph_objects as go
-import pandas as pd
-from PIL import Image
-import plotly.graph_objects as go
 from PIL import Image
 import plotly.express as px
-import plotly.graph_objects as go
 from scipy.interpolate import griddata
-import numpy as np
 from geopy.distance import geodesic
 from load_data import static_sensors, mobile_sensors, static_sensors_hour, static_sensors_min, mobile_sensors_hour, mobile_sensors_min
 
