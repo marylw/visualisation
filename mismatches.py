@@ -14,10 +14,9 @@ import plotly.graph_objects as go
 from scipy.interpolate import griddata
 import numpy as np
 from geopy.distance import geodesic
-
 from load_data import static_sensors, mobile_sensors, static_sensors_hour, static_sensors_min, mobile_sensors_hour, mobile_sensors_min
 
-# Function to rename values to danger categories
+# Function to rename values to radiation categories
 def classify_radiation(cpm):
     if cpm <= 100:
         return 1
@@ -38,7 +37,9 @@ mobile_sensors_hour['Radiation_Level'] = mobile_sensors_hour['Value'].apply(clas
 mobile_sensors_min['Radiation_Level'] = mobile_sensors_min['Value'].apply(classify_radiation)
 mobile_sensors['Radiation_Level'] = mobile_sensors['Value'].apply(classify_radiation)
 
-# CHECK MEASUREMENTS MOBILE SENSORS AGAINST STATIC SENSORS
+
+
+# Compare measurements of mobile and static sensors that are closeby
 # Constants
 earth_radius_km = 6371.0
 distance_threshold_km = 0.2
@@ -50,7 +51,7 @@ static_groups = static_sensors_min.groupby('Minute')
 mobile_groups = mobile_sensors_min.groupby('Minute')
 
 mismatched_sensors = []
-mobile_with_proximity = set()  # track sensors near any static sensor
+mobile_with_proximity = set()  
 
 for minute, mobile_minute_df in mobile_groups:
     if minute not in static_groups.groups:
@@ -98,6 +99,7 @@ for minute, mobile_minute_df in mobile_groups:
 # Final DataFrame of mismatches
 mismatched_df = pd.DataFrame(mismatched_sensors)
 
+
 # Show 0 for avg difference of  mobile sensors that did visit static sensor but had no notable difference, show nan for never having visited static sensor
 # Summarize mismatching sensors
 if not mismatched_df.empty:
@@ -113,13 +115,7 @@ else:
 # Get all mobile sensor IDs
 all_mobile_ids = mobile_sensors_min['Sensor-id'].unique()
 
-# At the top of your loop logic:
-mobile_with_proximity = set()
-
-# Inside the BallTree loop, after checking if len(indices) > 0:
-mobile_with_proximity.add(mobile_minute_df.iloc[i]['Sensor-id'])
-
-# Step 4: Build full summary
+# Build full summary
 matched_ids = set(mismatch_summary['MobileSensorID'])
 all_ids = set(all_mobile_ids)
 
